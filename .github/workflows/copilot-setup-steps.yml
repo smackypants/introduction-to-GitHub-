@@ -3,6 +3,9 @@ name: Copilot Setup Steps
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
@@ -12,4 +15,4 @@ jobs:
 
       - name: Run Gradle step
         if: ${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties') != '' }}
-        run: ./gradlew tasks --no-daemon
+        run: bash ./gradlew tasks --no-daemon
