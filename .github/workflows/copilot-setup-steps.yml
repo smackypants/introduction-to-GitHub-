@@ -15,4 +15,4 @@ jobs:
 
       - name: Run Gradle step
         if: ${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties') != '' }}
-        run: bash ./gradlew tasks --no-daemon
+        run: bash gradlew tasks --no-daemon
