@@ -1,0 +1,44 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Detect Gradle project directory
+        id: gradle_project
+        run: |
+          # Keep search bounded for faster setup runs while covering typical nested project layouts.
+          max_search_depth=8
+          gradle_project_file="$(find . -maxdepth "$max_search_depth" -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' \) | sort | head -n 1)"
+          if [ -z "$gradle_project_file" ]; then
+            gradle_project_file="$(find . -maxdepth "$max_search_depth" -type f \( -name 'build.gradle' -o -name 'build.gradle.kts' \) | sort | head -n 1)"
+          fi
+          if [ -n "$gradle_project_file" ]; then
+            gradle_project_dir="$(dirname "$gradle_project_file")"
+            gradle_project_found='true'
+          else
+            gradle_project_dir='.'
+            gradle_project_found='false'
+          fi
+          echo "path=$gradle_project_dir" >> "$GITHUB_OUTPUT"
+          echo "found=$gradle_project_found" >> "$GITHUB_OUTPUT"
+
+      - name: Submit Gradle dependencies
+        if: ${{ steps.gradle_project.outputs.found == 'true' }}
+        uses: gradle/actions/dependency-submission@ed408507eac070d1f99cc633dbcf757c94c7933a
+        with:
+          build-root-directory: ${{ steps.gradle_project.outputs.path }}
