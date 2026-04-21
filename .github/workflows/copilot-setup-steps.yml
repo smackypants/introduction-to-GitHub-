@@ -21,13 +21,15 @@ jobs:
       - name: Detect Gradle project directory
         id: gradle_project
         run: |
-          gradle_project_dir="$(find . -maxdepth 4 -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' -o -name 'build.gradle' -o -name 'build.gradle.kts' \) | head -n 1 | xargs -r dirname)"
-          if [ -z "$gradle_project_dir" ]; then
+          gradle_project_file="$(find . -maxdepth 4 -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' -o -name 'build.gradle' -o -name 'build.gradle.kts' \) | head -n 1)"
+          if [ -n "$gradle_project_file" ]; then
+            gradle_project_dir="$(dirname "$gradle_project_file")"
+          else
             gradle_project_dir='.'
           fi
           echo "path=$gradle_project_dir" >> "$GITHUB_OUTPUT"
 
       - name: Submit Gradle dependencies
-        uses: gradle/actions/dependency-submission@v4
+        uses: gradle/actions/dependency-submission@ed408507eac070d1f99cc633dbcf757c94c7933a
         with:
           build-root-directory: ${{ steps.gradle_project.outputs.path }}
