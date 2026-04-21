@@ -13,6 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Ensure Gradle wrapper is executable
+        if: ${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties') != '' }}
+        run: chmod +x ./gradlew
+
       - name: Run Gradle step
         if: ${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties') != '' }}
-        run: bash gradlew tasks --no-daemon
+        run: ./gradlew tasks --no-daemon
