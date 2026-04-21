@@ -1,0 +1,33 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Detect Gradle project directory
+        id: gradle_project
+        run: |
+          gradle_project_dir="$(find . -maxdepth 4 -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' -o -name 'build.gradle' -o -name 'build.gradle.kts' \) | head -n 1 | xargs -r dirname)"
+          if [ -z "$gradle_project_dir" ]; then
+            gradle_project_dir='.'
+          fi
+          echo "path=$gradle_project_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Submit Gradle dependencies
+        uses: gradle/actions/dependency-submission@v4
+        with:
+          build-root-directory: ${{ steps.gradle_project.outputs.path }}
