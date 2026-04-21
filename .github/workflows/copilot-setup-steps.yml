@@ -21,7 +21,12 @@ jobs:
       - name: Detect Gradle project directory
         id: gradle_project
         run: |
-          gradle_project_file="$(find . -maxdepth 4 -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' -o -name 'build.gradle' -o -name 'build.gradle.kts' \) | head -n 1)"
+          # Keep search bounded for faster setup runs while covering typical nested project layouts.
+          max_search_depth=8
+          gradle_project_file="$(find . -maxdepth "$max_search_depth" -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' \) | sort | head -n 1)"
+          if [ -z "$gradle_project_file" ]; then
+            gradle_project_file="$(find . -maxdepth "$max_search_depth" -type f \( -name 'build.gradle' -o -name 'build.gradle.kts' \) | sort | head -n 1)"
+          fi
           if [ -n "$gradle_project_file" ]; then
             gradle_project_dir="$(dirname "$gradle_project_file")"
           else
